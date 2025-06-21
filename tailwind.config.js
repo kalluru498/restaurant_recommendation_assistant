@@ -35,18 +35,9 @@ module.exports = {
           700: '#c2410c',
         }
       },
-      height: {
-        'screen-dynamic': '100dvh', // Dynamic viewport height
+      maxWidth: {
+        '8xl': '88rem',
       },
-      minHeight: {
-        'screen-dynamic': '100dvh',
-      },
-      maxHeight: {
-        'screen-dynamic': '100dvh',
-      },
-      spacing: {
-        'safe': 'env(safe-area-inset-bottom)',
-      }
     },
   },
   plugins: [],
