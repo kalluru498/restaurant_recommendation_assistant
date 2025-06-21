@@ -65,9 +65,16 @@ export default function RestaurantChatbot() {
     scrollToBottom();
   }, [messages]);
 
+<<<<<<< HEAD
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+=======
+  // Focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+>>>>>>> parent of 1502a40 (UI/UX fix to the mobile version and the updated the reddit code irrespective or subreddit)
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -142,6 +149,7 @@ export default function RestaurantChatbot() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex flex-col overflow-hidden" style={dynamicStyle}>
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-orange-200/50 px-4 py-3 shadow-sm" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
@@ -152,10 +160,34 @@ export default function RestaurantChatbot() {
           <div>
             <h1 className="text-lg font-semibold text-gray-800">Restaurant Assistant</h1>
             <p className="text-sm text-gray-600">Find your perfect meal</p>
+=======
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-orange-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Restaurant Assistant</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">Powered by AI • Reddit & Web Search</p>
+              </div>
+            </div>
+            <button
+              onClick={clearChat}
+              className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Clear chat"
+            >
+              Clear Chat
+            </button>
+>>>>>>> parent of 1502a40 (UI/UX fix to the mobile version and the updated the reddit code irrespective or subreddit)
           </div>
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Error Banner */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-4 mt-4 rounded-r-lg animate-slide-up">
@@ -165,6 +197,113 @@ export default function RestaurantChatbot() {
             <button 
               onClick={() => setError('')}
               className="ml-auto text-red-500 hover:text-red-700"
+=======
+      {/* Main Chat Area */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pb-32">
+        <div className="py-6 space-y-6">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex items-start space-x-3 ${
+                message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+              }`}
+            >
+              {/* Avatar */}
+              <div
+                className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
+                  message.role === 'user'
+                    ? 'bg-blue-500'
+                    : 'bg-gradient-to-r from-orange-500 to-red-500'
+                }`}
+              >
+                {message.role === 'user' ? (
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                ) : (
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                )}
+              </div>
+
+              {/* Message Content */}
+              <div
+                className={`flex-1 max-w-xs sm:max-w-2xl ${
+                  message.role === 'user' ? 'text-right' : 'text-left'
+                }`}
+              >
+                <div
+                  className={`inline-block px-4 py-3 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white border border-gray-200 text-gray-900 shadow-sm'
+                  }`}
+                >
+                  <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                    {message.content}
+                  </div>
+                  
+                  {/* Sources */}
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex items-center space-x-1 mb-2">
+                        <Search className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Sources
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {message.sources.map((source, index) => (
+                          <div key={index} className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                            {source}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Timestamp */}
+                <div
+                  className={`mt-1 text-xs text-gray-500 ${
+                    message.role === 'user' ? 'text-right' : 'text-left'
+                  }`}
+                >
+                  {formatTimestamp(message.timestamp)}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                  <span className="text-sm text-gray-600">Searching for recommendations...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </main>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="fixed top-20 left-4 right-4 z-20 max-w-4xl mx-auto">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-500 hover:text-red-700"
+              aria-label="Dismiss error"
+>>>>>>> parent of 1502a40 (UI/UX fix to the mobile version and the updated the reddit code irrespective or subreddit)
             >
               ×
             </button>
@@ -172,6 +311,7 @@ export default function RestaurantChatbot() {
         </div>
       )}
 
+<<<<<<< HEAD
       {/* Messages Container */}
       <div 
         ref={chatContainerRef}
@@ -206,6 +346,44 @@ export default function RestaurantChatbot() {
                 </button>
               ))}
             </div>
+=======
+      {/* Input Form - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <form onSubmit={handleSubmit} className="flex space-x-3">
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about restaurants... (e.g., 'Best pizza in Brooklyn')"
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none text-sm sm:text-base"
+                disabled={isLoading}
+                maxLength={500}
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <MessageSquare className="w-4 h-4 text-gray-400" />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center min-w-[48px]"
+              aria-label="Send message"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </button>
+          </form>
+          
+          {/* Character count */}
+          <div className="mt-2 text-xs text-gray-500 text-right">
+            {input.length}/500
+>>>>>>> parent of 1502a40 (UI/UX fix to the mobile version and the updated the reddit code irrespective or subreddit)
           </div>
         ) : (
           <div className="space-y-4">
