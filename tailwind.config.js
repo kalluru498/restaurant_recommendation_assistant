@@ -35,13 +35,16 @@ module.exports = {
           700: '#c2410c',
         }
       },
-      maxWidth: {
-        '8xl': '88rem',
+      height: {
+        'screen-dynamic': '100dvh', // Dynamic viewport height
+      },
+      minHeight: {
+        'screen-dynamic': '100dvh',
+      },
+      maxHeight: {
+        'screen-dynamic': '100dvh',
       },
       spacing: {
-        'safe': 'env(safe-area-inset-bottom)',
-      },
-      padding: {
         'safe': 'env(safe-area-inset-bottom)',
       }
     },
