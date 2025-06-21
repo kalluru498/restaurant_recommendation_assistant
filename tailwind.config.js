@@ -38,17 +38,13 @@ module.exports = {
       maxWidth: {
         '8xl': '88rem',
       },
-    },
-  },
-  plugins: [],
-  theme: {
-    extend: {
       spacing: {
         'safe': 'env(safe-area-inset-bottom)',
       },
       padding: {
         'safe': 'env(safe-area-inset-bottom)',
       }
-    }
-  }
+    },
+  },
+  plugins: [],
 }
