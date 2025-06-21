@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Restaurant Chatbot - Find Your Perfect Meal',
   description: 'AI-powered restaurant recommendations using Reddit and web reviews',
+  viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
 }
 
 export default function RootLayout({
