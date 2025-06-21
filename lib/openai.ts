@@ -74,9 +74,12 @@ export class RedditClient {
       if (data.access_token) {
         this.accessToken = data.access_token;
         this.tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000; // 1 minute buffer
+        
+        if (!this.accessToken) {
+          throw new Error('Access token is null or undefined');
+        }
         return this.accessToken;
       }
-      
       throw new Error('Failed to get access token');
     } catch (error) {
       console.error('Reddit auth error:', error);

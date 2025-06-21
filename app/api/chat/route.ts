@@ -233,7 +233,7 @@ Focus on providing helpful, accurate restaurant recommendations based on real us
     }
 
     // Remove duplicate sources
-    sources = [...new Set(sources)];
+    sources = sources.filter((source, index, array) => array.indexOf(source) === index);
 
     console.log('Sending response with', sources.length, 'sources');
 
