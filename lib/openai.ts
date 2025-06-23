@@ -12,7 +12,7 @@ export const openai = new OpenAI({
 export const createChatCompletion = async (messages: any[]) => {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o-mini-2024-07-18',
       messages,
       temperature: 0.7,
       max_tokens: 1000,
