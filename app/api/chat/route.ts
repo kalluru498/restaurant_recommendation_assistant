@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import { searchReddit } from '@/lib/reddit';
 import { searchWeb } from '@/lib/web-search';
+import { getAvailableProviders, getOpenAI, getGemini } from '@/lib/ai-providers';
 
-
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-
-// Define available tools
-const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
+// Define available tools for OpenAI
+const tools: any[] = [
   {
     type: 'function',
     function: {
@@ -67,32 +60,66 @@ interface ChatMessage {
 
 interface ChatRequest {
   messages: ChatMessage[];
+  preferredProvider?: string;
 }
 
-export async function POST(req: NextRequest) {
+// Enhanced error handling and tool execution
+async function executeToolCall(toolName: string, args: any): Promise<{ result: any; sources: string[] }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
-    // Validate API key
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured');
-      return NextResponse.json(
-        { error: 'OpenAI API key not configured. Please check your environment variables.' },
-        { status: 500 }
-      );
+    let result: any;
+    let sources: string[] = [];
+
+    switch (toolName) {
+      case 'search_reddit':
+        const redditResult = await searchReddit(args.query, args.subreddits);
+        result = redditResult;
+        sources = redditResult.sources || [];
+        break;
+
+      case 'search_web':
+        const webResult = await searchWeb(args.query, args.focus);
+        result = webResult;
+        sources = webResult.sources || [];
+        break;
+
+      default:
+        throw new Error(`Unknown tool: ${toolName}`);
     }
 
-    // Parse request body
+    clearTimeout(timeoutId);
+    return { result, sources };
+
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error(`Tool ${toolName} error:`, error);
+    
+    return {
+      result: { 
+        error: `Search temporarily unavailable: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        fallback: `I'm having trouble accessing ${toolName} right now. Please try asking your question in a different way.`
+      },
+      sources: []
+    };
+  }
+}
+
+// Main API handler
+export async function POST(req: NextRequest) {
+  try {
+    // Parse and validate request
     let body: ChatRequest;
     try {
       body = await req.json();
     } catch (error) {
-      console.error('Invalid JSON in request body:', error);
       return NextResponse.json(
         { error: 'Invalid request format. Please send valid JSON.' },
         { status: 400 }
       );
     }
 
-    // Validate messages
     if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
       return NextResponse.json(
         { error: 'Messages array is required and cannot be empty.' },
@@ -100,32 +127,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate message format
-    for (const message of body.messages) {
-      if (!message.role || !message.content) {
-        return NextResponse.json(
-          { error: 'Each message must have a role and content.' },
-          { status: 400 }
-        );
-      }
-      if (!['user', 'assistant', 'system'].includes(message.role)) {
-        return NextResponse.json(
-          { error: 'Message role must be user, assistant, or system.' },
-          { status: 400 }
-        );
-      }
+    // Check available providers
+    const availableProviders = getAvailableProviders();
+    if (availableProviders.length === 0) {
+      return NextResponse.json(
+        { error: 'No AI providers are configured. Please check your API keys.' },
+        { status: 500 }
+      );
     }
 
-    // System prompt for restaurant recommendations
-    
+    // Select provider
+    let selectedProvider = availableProviders[0];
+    if (body.preferredProvider) {
+      const preferred = availableProviders.find(p => p.name === body.preferredProvider);
+      if (preferred) selectedProvider = preferred;
+    }
+
+    console.log(`Using AI provider: ${selectedProvider.name}`);
+
+    // System message
     const systemMessage: ChatMessage = {
       role: 'system',
       content: `You are a helpful restaurant recommendation assistant. You have access to two powerful tools:
 
       1. search_reddit: Use this to find authentic user reviews and discussions about restaurants from Reddit communities
       2. search_web: Use this to search for professional reviews, restaurant information, menus, and general recommendations
+      
       IMPORTANT: If a user asks about anything outside restaurants or food (e.g., car service, flights, plumbing), politely refuse and respond:
-      " I am specialized in restaurant recommendations and food-related assistance. Please ask me about restaurants, cuisines, dishes, or dining options."
+      "I am specialized in restaurant recommendations and food-related assistance. Please ask me about restaurants, cuisines, dishes, or dining options."
+      
       Guidelines:
       - Always use at least one tool to provide informed recommendations
       - Combine information from multiple sources when possible
@@ -136,148 +166,170 @@ export async function POST(req: NextRequest) {
       - Be honest about limitations if information is incomplete
       - Always cite your sources clearly
       - If you can't find recent information, mention this limitation
-      - When food-related user queries are ambiguous or include a location/cuisine, call the search_reddit tool using relevant keywords.
 
       Focus on providing helpful, accurate restaurant recommendations based on real user experiences and professional reviews.`
     };
 
-    // Prepare messages for OpenAI
     const messages: ChatMessage[] = [systemMessage, ...body.messages];
-
-    console.log('Sending request to OpenAI with', messages.length, 'messages');
-
-    // Call OpenAI with function calling
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      })),
-      tools,
-      tool_choice: 'auto',
-      temperature: 0.7,
-      max_tokens: 1000,
-    });
-
-    const responseMessage = completion.choices[0]?.message;
-    
-    if (!responseMessage) {
-      throw new Error('No response from OpenAI');
-    }
-
-    let finalResponse = responseMessage.content || '';
+    let finalResponse = '';
     let sources: string[] = [];
+    let usedProvider = selectedProvider.name;
 
-    // Handle tool calls
-    if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-      console.log('Processing', responseMessage.tool_calls.length, 'tool calls');
+    // Try each provider in order
+    for (let i = 0; i < availableProviders.length; i++) {
+      const currentProvider = i === 0 ? selectedProvider : availableProviders[i];
       
-      const toolMessages: any[] = [
-        ...messages.map(msg => ({ role: msg.role, content: msg.content })),
-        responseMessage
-      ];
+      try {
+        console.log(`Attempting with provider: ${currentProvider.name}`);
 
-      // Execute tool calls
-      for (const toolCall of responseMessage.tool_calls) {
-        const { function: func } = toolCall;
-        let toolResult: any;
-        let toolSources: string[] = [];
+        if (currentProvider.name === 'gemini') {
+          const gemini = getGemini();
+          if (!gemini) throw new Error('Gemini service not available');
 
-        try {
-          console.log(`Executing tool: ${func.name} with args:`, func.arguments);
+          // Use Gemini service
+          const geminiResponse = await gemini.generateResponse(messages);
           
-          const args = JSON.parse(func.arguments);
+          if (geminiResponse.needsTools && geminiResponse.toolQueries.length > 0) {
+            const toolResults = [];
+            
+            for (const toolQuery of geminiResponse.toolQueries) {
+              const args = toolQuery.type === 'search_reddit' 
+                ? { query: toolQuery.query }
+                : { query: toolQuery.query, focus: 'general' };
+              
+              const { result, sources: toolSources } = await executeToolCall(toolQuery.type, args);
+              toolResults.push(result);
+              sources.push(...toolSources);
+            }
 
-          switch (func.name) {
-            case 'search_reddit':
-              const redditResult = await searchReddit(args.query, args.subreddits);
-              toolResult = redditResult;
-              toolSources = redditResult.sources || [];
-              break;
-
-            case 'search_web':
-              const webResult = await searchWeb(args.query, args.focus);
-              toolResult = webResult;
-              toolSources = webResult.sources || [];
-              break;
-
-            default:
-              toolResult = { error: `Unknown tool: ${func.name}` };
+            finalResponse = await gemini.generateWithToolResults(messages, toolResults);
+          } else {
+            finalResponse = geminiResponse.message;
           }
 
-          sources.push(...toolSources);
+          usedProvider = 'gemini';
+          break;
 
-        } catch (error) {
-          console.error(`Tool ${func.name} error:`, error);
-          toolResult = { 
-            error: `Failed to execute ${func.name}: ${error instanceof Error ? error.message : 'Unknown error'}` 
-          };
+        } else if (currentProvider.name === 'openai') {
+          const openai = getOpenAI();
+          if (!openai) throw new Error('OpenAI service not available');
+
+          // Use OpenAI with function calling
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4-turbo-preview',
+            messages: messages.map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            tools,
+            tool_choice: 'auto',
+            temperature: 0.7,
+            max_tokens: 1000,
+          });
+
+          const responseMessage = completion.choices[0]?.message;
+          if (!responseMessage) throw new Error('No response from OpenAI');
+
+          finalResponse = responseMessage.content || '';
+
+          // Handle tool calls
+          if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+            const toolMessages: any[] = [
+              ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+              responseMessage
+            ];
+
+            for (const toolCall of responseMessage.tool_calls) {
+              const { function: func } = toolCall;
+              const args = JSON.parse(func.arguments);
+              
+              const { result, sources: toolSources } = await executeToolCall(func.name, args);
+              sources.push(...toolSources);
+
+              toolMessages.push({
+                tool_call_id: toolCall.id,
+                role: 'tool',
+                content: JSON.stringify(result)
+              });
+            }
+
+            const finalCompletion = await openai.chat.completions.create({
+              model: 'gpt-4-turbo-preview',
+              messages: toolMessages,
+              temperature: 0.7,
+              max_tokens: 1000,
+            });
+
+            finalResponse = finalCompletion.choices[0]?.message?.content || 'I apologize, but I encountered an issue processing your request.';
+          }
+
+          usedProvider = 'openai';
+          break;
         }
 
-        // Add tool result to conversation
-        toolMessages.push({
-          tool_call_id: toolCall.id,
-          role: 'tool',
-          content: JSON.stringify(toolResult)
-        });
+      } catch (error) {
+        console.error(`Provider ${currentProvider.name} failed:`, error);
+        
+        if (i === availableProviders.length - 1) {
+          throw error;
+        }
+        
+        console.log(`Switching to next provider...`);
       }
-
-      // Get final response with tool results
-      console.log('Getting final response from OpenAI with tool results');
-      
-      const finalCompletion = await openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
-        messages: toolMessages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      });
-
-      finalResponse = finalCompletion.choices[0]?.message?.content || 'I apologize, but I encountered an issue processing your request.';
     }
 
     // Remove duplicate sources
     sources = sources.filter((source, index, array) => array.indexOf(source) === index);
 
-    console.log('Sending response with', sources.length, 'sources');
+    console.log(`Response generated using ${usedProvider} with ${sources.length} sources`);
 
     return NextResponse.json({
       message: finalResponse,
-      sources: sources.length > 0 ? sources : undefined
+      sources: sources.length > 0 ? sources : undefined,
+      provider: usedProvider
     });
 
   } catch (error) {
     console.error('Chat API error:', error);
     
-    // Handle specific OpenAI errors
+    // Handle specific errors
     if (error instanceof Error) {
-      if (error.message.includes('rate limit')) {
+      if (error.message.includes('rate limit') || error.message.includes('429')) {
         return NextResponse.json(
           { error: 'Rate limit exceeded. Please try again in a moment.' },
           { status: 429 }
         );
       }
-      if (error.message.includes('insufficient_quota')) {
+      if (error.message.includes('insufficient_quota') || error.message.includes('402')) {
         return NextResponse.json(
-          { error: 'API quota exceeded. Please check your OpenAI billing.' },
+          { error: 'API quota exceeded. Please check your billing settings.' },
           { status: 402 }
         );
       }
-      if (error.message.includes('invalid_api_key')) {
+      if (error.message.includes('invalid_api_key') || error.message.includes('401')) {
         return NextResponse.json(
-          { error: 'Invalid API key. Please check your OpenAI configuration.' },
+          { error: 'Invalid API key. Please check your configuration.' },
           { status: 401 }
+        );
+      }
+      if (error.message.includes('timeout')) {
+        return NextResponse.json(
+          { error: 'Request timeout. Please try again.' },
+          { status: 408 }
         );
       }
     }
 
     return NextResponse.json(
-      { error: 'An internal server error occurred. Please try again later.' },
+      { 
+        error: 'An internal server error occurred. Please try again later.',
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
+      },
       { status: 500 }
     );
   }
 }
 
-// Handle unsupported methods
 export async function GET() {
   return NextResponse.json(
     { error: 'Method not allowed. Use POST to send chat messages.' },

@@ -6,7 +6,7 @@ A full-stack Next.js chatbot application that provides intelligent restaurant re
 
 ## ✨ Features
 
-- **AI-Powered Conversations**: Utilizes OpenAI GPT-4 for natural language understanding
+- **Multi-AI Conversations**: Powered by OpenAI GPT-4o-mini and Google Gemini for diverse, intelligent responses
 - **Multi-Source Research**: Combines Reddit discussions and web search for comprehensive recommendations
 - **Real-Time Streaming**: Streaming responses for better user experience
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -23,6 +23,7 @@ https://restaurant-recommendation-assistant.vercel.app/
 
 - Node.js 18+ and npm
 - OpenAI API key
+- Google Gemini API key (Required for enhanced AI responses)
 - Reddit API credentials
 - Brave Search API key (optional, for enhanced web search)
 
@@ -43,6 +44,7 @@ npm install
 Create a `.env.local` file in the root directory:
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
+GOOGLE_API_KEY=your_production_gemini_key
 REDDIT_CLIENT_ID=your_reddit_client_id_here
 REDDIT_CLIENT_SECRET=your_reddit_client_secret_here
 BRAVE_SEARCH_API_KEY=your_brave_search_api_key_here
@@ -57,6 +59,12 @@ npm run dev
 Navigate to `http://localhost:3000` to see the application.
 
 ## 🔧 API Setup Guide
+
+### Google Gemini API (Required)
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create account and generate API key
+3. Add to `.env.local` as `GOOGLE_API_KEY`
+4. Ensure Gemini Pro model access
 
 ### OpenAI API
 1. Visit [OpenAI Platform](https://platform.openai.com/)
@@ -86,17 +94,15 @@ restaurant-chatbot/
 │   ├── api/
 │   │   └── chat/
 │   │       └── route.ts          # API endpoint for chat functionality
-│   ├── components/
-│   │   ├── ChatInterface.tsx     # Main chat interface component
-│   │   ├── MessageBubble.tsx     # Individual message component
-│   │   └── TypingIndicator.tsx   # Loading animation component
-│   ├── lib/
-│   │   ├── openai.ts            # OpenAI client configuration
-│   │   ├── reddit.ts            # Reddit API integration
-│   │   └── search.ts            # Web search functionality
 │   ├── globals.css              # Global styles
 │   ├── layout.tsx               # Root layout component
 │   └── page.tsx                 # Home page component
+├── lib/
+|   ├── ai-provider.ts       # Multi-AI provider management
+|   ├── gemini.ts            # Gemini Client configuration
+│   ├── openai.ts            # OpenAI client configuration
+│   ├── reddit.ts            # Reddit API integration
+│   └── search.ts            # Web search functionality
 ├── public/
 │   └── favicon.ico
 ├── .env.local                   # Environment variables
