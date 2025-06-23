@@ -135,7 +135,7 @@ export default function ChatPage() {
                   🍽️ Restaurant Assistant
                 </h1>
                 <p className="text-xs text-gray-600 truncate">
-                  Powered by AI, Reddit and Web Search
+                  Powered by AI. Reddit and Web Search
                 </p>
               </div>
             </div>
