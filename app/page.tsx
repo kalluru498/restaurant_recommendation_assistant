@@ -121,39 +121,39 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
-      {/* Header - Improved responsive design */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-orange-200">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg sm:rounded-xl flex-shrink-0">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 overflow-x-hidden">
+      {/* Header - Mobile-first responsive design */}
+      <header className="sticky top-0 z-10 bg-white border-b border-orange-200 w-full">
+        <div className="w-full px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between min-w-0">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 mr-2">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex-shrink-0">
                 <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
+                <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
                   Restaurant Assistant
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block truncate">
-                  Powered by AI • Reddit & Web Search
+                <p className="text-xs text-gray-600 hidden sm:block truncate">
+                  AI • Reddit & Web Search
                 </p>
               </div>
             </div>
             <button
               onClick={clearChat}
-              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors flex-shrink-0"
+              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors flex-shrink-0"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
               aria-label="Clear chat"
             >
-              <span className="hidden sm:inline">Clear Chat</span>
-              <span className="sm:hidden">Clear</span>
+              Clear
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Chat Area - Enhanced responsive spacing */}
-      <main className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 pb-28 sm:pb-32">
-        <div className="py-4 sm:py-6 space-y-4 sm:space-y-6">
+      {/* Main Chat Area - No horizontal scroll */}
+      <main className="w-full px-3 sm:px-4 lg:px-6 pb-32 sm:pb-28">
+        <div className="py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -176,23 +176,25 @@ export default function ChatPage() {
                 )}
               </div>
 
-              {/* Message Content - Improved responsive width handling */}
+              {/* Message Content - Prevent horizontal overflow */}
               <div
                 className={`flex-1 min-w-0 ${
                   message.role === 'user' ? 'text-right' : 'text-left'
                 }`}
-                style={{ 
-                  maxWidth: message.role === 'user' ? '85%' : '90%'
-                }}
               >
                 <div
-                  className={`inline-block px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl break-words ${
+                  className={`inline-block px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl max-w-full overflow-hidden ${
                     message.role === 'user'
-                      ? 'bg-blue-500 text-white max-w-full'
-                      : 'bg-white border border-gray-200 text-gray-900 shadow-sm max-w-full'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white border border-gray-200 text-gray-900 shadow-sm'
                   }`}
+                  style={{
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    hyphens: 'auto'
+                  }}
                 >
-                  <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed word-wrap break-words">
+                  <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
                     {message.content}
                   </div>
                   
@@ -207,7 +209,14 @@ export default function ChatPage() {
                       </div>
                       <div className="space-y-1">
                         {message.sources.map((source, index) => (
-                          <div key={index} className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded break-words">
+                          <div 
+                            key={index} 
+                            className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded"
+                            style={{
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word'
+                            }}
+                          >
                             {source}
                           </div>
                         ))}
@@ -250,17 +259,20 @@ export default function ChatPage() {
         </div>
       </main>
 
-      {/* Error Banner - Responsive positioning */}
+      {/* Error Banner - No horizontal overflow */}
       {error && (
-        <div className="fixed top-16 sm:top-20 left-2 right-2 sm:left-4 sm:right-4 z-20 max-w-6xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-start sm:items-center gap-2 sm:gap-3">
+        <div className="fixed top-16 sm:top-20 left-2 right-2 z-20">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3 max-w-4xl mx-auto">
             <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-red-700 break-words">{error}</p>
+              <p className="text-sm text-red-700" style={{ wordBreak: 'break-word' }}>
+                {error}
+              </p>
             </div>
             <button
               onClick={() => setError(null)}
-              className="text-red-500 hover:text-red-700 text-lg sm:text-xl flex-shrink-0 leading-none"
+              className="text-red-500 hover:text-red-700 text-lg leading-none flex-shrink-0"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
               aria-label="Dismiss error"
             >
               ×
@@ -269,11 +281,11 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Input Form - Enhanced responsive design */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 safe-area-pb">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-          <div className="flex gap-2 sm:gap-3">
-            <div className="flex-1 relative min-w-0">
+      {/* Input Form - Mobile-optimized design */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
+        <div className="w-full max-w-none px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex items-end gap-2 w-full">
+            <div className="flex-1 min-w-0">
               <input
                 ref={inputRef}
                 type="text"
@@ -285,31 +297,46 @@ export default function ChatPage() {
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Ask about restaurants... (e.g., 'Best pizza in Brooklyn')"
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none text-sm sm:text-base resize-none"
+                placeholder="Ask about restaurants..."
+                className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 outline-none text-base bg-white disabled:bg-gray-50 disabled:text-gray-500"
+                style={{
+                  WebkitAppearance: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                  fontSize: '16px' // Prevents zoom on iOS
+                }}
                 disabled={isLoading}
                 maxLength={500}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
               />
-              <div className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <MessageSquare className="w-4 h-4 text-gray-400" />
+              {/* Character count inside input area on mobile */}
+              <div className="mt-1 text-xs text-gray-400 px-1 sm:hidden">
+                <span className={input.length > 450 ? 'text-orange-600 font-medium' : ''}>
+                  {input.length}/500
+                </span>
               </div>
             </div>
             <button
-              type="submit"
+              onClick={handleSubmit}
               disabled={!input.trim() || isLoading}
-              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg sm:rounded-xl hover:from-orange-600 hover:to-red-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center min-w-[44px] sm:min-w-[48px] flex-shrink-0"
+              className="flex-shrink-0 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center touch-manipulation"
+              style={{
+                WebkitTapHighlightColor: 'transparent'
+              }}
               aria-label="Send message"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Send className="w-5 h-5" />
               )}
             </button>
           </div>
           
-          {/* Character count - Responsive positioning */}
-          <div className="mt-1.5 sm:mt-2 text-xs text-gray-500 text-right">
+          {/* Character count - Hidden on mobile, shown on desktop */}
+          <div className="mt-2 text-xs text-gray-500 text-right hidden sm:block">
             <span className={input.length > 450 ? 'text-orange-600 font-medium' : ''}>
               {input.length}/500
             </span>
