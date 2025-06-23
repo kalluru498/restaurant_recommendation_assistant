@@ -300,9 +300,9 @@ export default function ChatPage() {
                 placeholder="Ask about restaurants..."
                 className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 outline-none text-base bg-white disabled:bg-gray-50 disabled:text-gray-500"
                 style={{
-                  WebkitAppearance: 'none',
                   WebkitTapHighlightColor: 'transparent',
-                  fontSize: '16px' // Prevents zoom on iOS
+                  touchAction: 'manipulation',
+                  alignSelf: 'flex-start'  // ← This line fixes the alignment issue
                 }}
                 disabled={isLoading}
                 maxLength={500}
