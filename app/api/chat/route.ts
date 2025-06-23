@@ -136,6 +136,7 @@ export async function POST(req: NextRequest) {
       - Be honest about limitations if information is incomplete
       - Always cite your sources clearly
       - If you can't find recent information, mention this limitation
+      - When food-related user queries are ambiguous or include a location/cuisine, call the search_reddit tool using relevant keywords.
 
       Focus on providing helpful, accurate restaurant recommendations based on real user experiences and professional reviews.`
     };

@@ -32,7 +32,7 @@ interface RedditSearchResult {
 
 export async function searchReddit(
   query: string, 
-  subreddits: string[] = ['food', 'AskNYC', 'nyc', 'FoodNYC', 'restaurant']
+  subreddits: string[] = ['food', 'AskNYC', 'nyc', 'FoodNYC', 'restaurant', 'foodporn', 'travel', 'all', 'restaurants']
 ): Promise<RedditSearchResult> {
   try {
     console.log(`Searching Reddit for: "${query}" in subreddits:`, subreddits);
@@ -101,8 +101,10 @@ async function searchRedditAPI(query: string, subreddits: string[]): Promise<Red
 
   // Sort by score and relevance
   const sortedPosts = allPosts
-    .filter(post => post.score > 0 && (post.title.toLowerCase().includes(query.toLowerCase()) || 
-                                      post.selftext.toLowerCase().includes(query.toLowerCase())))
+    .filter(post => post.score > 0 && (
+      post.title.toLowerCase().includes(query.toLowerCase()) ||
+      post.selftext.toLowerCase().includes(query.toLowerCase())
+    ))
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
