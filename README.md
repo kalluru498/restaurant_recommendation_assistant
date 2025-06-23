@@ -248,13 +248,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Next.js team for the excellent framework
 - Tailwind CSS for utility-first styling
 
-## 📞 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Check existing issues for solutions
-- Refer to the API documentation for each service
-
 ---
 
 **Made with ❤️ for food lovers everywhere**
