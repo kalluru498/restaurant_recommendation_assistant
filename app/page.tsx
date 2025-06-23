@@ -132,10 +132,10 @@ export default function ChatPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
-                  Restaurant Assistant
+                  🍽️ Restaurant Assistant
                 </h1>
-                <p className="text-xs text-gray-600 hidden sm:block truncate">
-                  AI • Reddit & Web Search
+                <p className="text-xs text-gray-600 truncate">
+                  Powered by AI, Reddit and Web Search
                 </p>
               </div>
             </div>
@@ -284,7 +284,7 @@ export default function ChatPage() {
       {/* Input Form - Mobile-optimized design */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
         <div className="w-full max-w-none px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-          <div className="flex items-end gap-2 w-full">
+          <div className="flex items-start gap-2 w-full">
             <div className="flex-1 min-w-0">
               <input
                 ref={inputRef}
@@ -302,7 +302,7 @@ export default function ChatPage() {
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
-                  alignSelf: 'flex-start'  // ← This line fixes the alignment issue
+                  fontSize: '16px'
                 }}
                 disabled={isLoading}
                 maxLength={500}
@@ -321,9 +321,10 @@ export default function ChatPage() {
             <button
               onClick={handleSubmit}
               disabled={!input.trim() || isLoading}
-              className="flex-shrink-0 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center touch-manipulation"
+              className="flex-shrink-0 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center touch-manipulation"
               style={{
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                alignSelf: 'flex-start'
               }}
               aria-label="Send message"
             >
