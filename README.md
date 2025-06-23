@@ -14,6 +14,9 @@ A full-stack Next.js chatbot application that provides intelligent restaurant re
 - **Location-Aware**: Provides location-specific restaurant recommendations
 - **Conversation History**: Maintains context throughout the chat session
 
+### 🌐 Live App
+https://restaurant-recommendation-assistant.vercel.app/
+
 ## 🚀 Quick Start
 
 ### Prerequisites
