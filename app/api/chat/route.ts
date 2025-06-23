@@ -3,10 +3,12 @@ import OpenAI from 'openai';
 import { searchReddit } from '@/lib/reddit';
 import { searchWeb } from '@/lib/web-search';
 
+
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
 
 // Define available tools
 const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
@@ -115,25 +117,27 @@ export async function POST(req: NextRequest) {
     }
 
     // System prompt for restaurant recommendations
+    
     const systemMessage: ChatMessage = {
       role: 'system',
       content: `You are a helpful restaurant recommendation assistant. You have access to two powerful tools:
 
-1. search_reddit: Use this to find authentic user reviews and discussions about restaurants from Reddit communities
-2. search_web: Use this to search for professional reviews, restaurant information, menus, and general recommendations
+      1. search_reddit: Use this to find authentic user reviews and discussions about restaurants from Reddit communities
+      2. search_web: Use this to search for professional reviews, restaurant information, menus, and general recommendations
+      IMPORTANT: If a user asks about anything outside restaurants or food (e.g., car service, flights, plumbing), politely refuse and respond:
+      " I am specialized in restaurant recommendations and food-related assistance. Please ask me about restaurants, cuisines, dishes, or dining options."
+      Guidelines:
+      - Always use at least one tool to provide informed recommendations
+      - Combine information from multiple sources when possible
+      - For specific restaurant questions, search for that restaurant name
+      - For area-based questions (e.g., "best pizza in Brooklyn"), search for the cuisine + location
+      - Include price information when available
+      - Mention atmosphere, service quality, and must-try dishes
+      - Be honest about limitations if information is incomplete
+      - Always cite your sources clearly
+      - If you can't find recent information, mention this limitation
 
-Guidelines:
-- Always use at least one tool to provide informed recommendations
-- Combine information from multiple sources when possible
-- For specific restaurant questions, search for that restaurant name
-- For area-based questions (e.g., "best pizza in Brooklyn"), search for the cuisine + location
-- Include price information when available
-- Mention atmosphere, service quality, and must-try dishes
-- Be honest about limitations if information is incomplete
-- Always cite your sources clearly
-- If you can't find recent information, mention this limitation
-
-Focus on providing helpful, accurate restaurant recommendations based on real user experiences and professional reviews.`
+      Focus on providing helpful, accurate restaurant recommendations based on real user experiences and professional reviews.`
     };
 
     // Prepare messages for OpenAI
